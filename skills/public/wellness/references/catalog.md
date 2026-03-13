@@ -20,7 +20,7 @@ Legend:
 
 - Fitbit (sleep, activity, heart)
   - Connect: OAuth
-  - Skill: TBD (`openclaw-fitbit`)
+  - Skill: `openclaw-fitbit`
 
 - Withings (weight, body fat, BP, and sleep summary where available)
   - Connect: OAuth

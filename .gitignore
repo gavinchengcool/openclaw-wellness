@@ -1,0 +1,12 @@
+# OpenClaw workspace noise
+.openclaw/
+
+# Packaging output
+/dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

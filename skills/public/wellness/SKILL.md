@@ -44,6 +44,12 @@ This skill is the **hub**. It should:
 - Android exporter (automation): `references/exporter-android-automation.md`
 - Ingest protocol: `references/ingest-protocol.md`
 
+## Daily digest + push
+
+To generate a unified digest, use `scripts/wellness_digest.py` to merge normalized source outputs (Tier 1) and optionally include the newest Tier 2 bridge inbox payload.
+
+To prepare a sendable message (and optionally emit a `message` tool template), use `scripts/wellness_push.py`.
+
 ## Guardrails
 
 - Do not use unofficial scraping or credential capture.

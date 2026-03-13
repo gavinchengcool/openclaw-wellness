@@ -15,8 +15,8 @@ Legend:
   - Skill: `openclaw-whoop`
 
 - Oura Ring (sleep, readiness, activity)
-  - Connect: OAuth / personal token (depends on current Oura API policy)
-  - Skill: TBD (`openclaw-oura`)
+  - Connect: Personal Access Token (Tier 1)
+  - Skill: `openclaw-oura`
 
 - Fitbit (sleep, activity, heart)
   - Connect: OAuth

@@ -39,6 +39,7 @@ This skill is the **hub**. It should:
 - Source catalog: `references/catalog.md`
 - Unified normalized schema: `references/schema.md`
 - Digest templates: `references/digest-templates.md`
+- Tier 2 bridge (Apple Health / Health Connect): `references/bridge.md`
 
 ## Guardrails
 

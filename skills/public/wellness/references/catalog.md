@@ -22,9 +22,9 @@ Legend:
   - Connect: OAuth
   - Skill: TBD (`openclaw-fitbit`)
 
-- Withings (weight, body fat, BP, sometimes sleep depending on device)
+- Withings (weight, body fat, BP, and sleep summary where available)
   - Connect: OAuth
-  - Skill: TBD (`openclaw-withings`)
+  - Skill: `openclaw-withings`
 
 ### Workouts / training logs
 

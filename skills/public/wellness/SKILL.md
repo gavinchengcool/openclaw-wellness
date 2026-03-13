@@ -22,9 +22,12 @@ This skill is the **hub**. It should:
 ## Quick start
 
 1) Ask the user which sources they use (wearables, workouts, nutrition, scales, etc.).
-2) For each source, consult the catalog: `references/catalog.md`.
-3) Install the source skill(s) (via `clawhub install <slug>`), then run the source skill’s connect/fetch workflow.
-4) Produce a digest using the normalized schema in `references/schema.md`.
+2) Ask where they are authorizing OAuth:
+   - **Phone/remote** (recommended): user opens the auth link on any device and copy/pastes the redirect URL/code back into chat.
+   - **Desktop same-machine** (optional): user authorizes in a browser on the same machine that runs OpenClaw and can use loopback redirects (127.0.0.1) for a no-copy/paste fast path.
+3) For each source, consult the catalog: `references/catalog.md`.
+4) Install the source skill(s) (via `clawhub install <slug>`), then run the source skill’s connect/fetch workflow.
+5) Produce a digest using the normalized schema in `references/schema.md`.
 
 ## Source selection
 

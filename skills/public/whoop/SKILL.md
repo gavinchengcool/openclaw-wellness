@@ -17,10 +17,18 @@ Scope: WHOOP is the data source only. Keep delivery channel-agnostic: generate t
 - `WHOOP_CLIENT_SECRET`
 - `WHOOP_REDIRECT_URI`
 
-2) Connect once:
+2) Connect once (choose one):
+
+**Phone/remote mode (recommended):** run, then copy/paste the redirect URL or code back into chat.
 
 ```bash
 python3 scripts/whoop_oauth_login.py
+```
+
+**Desktop fast path (optional):** if you are authorizing in a browser on the same machine that runs OpenClaw, set `WHOOP_REDIRECT_URI` to a loopback URL (e.g. `http://127.0.0.1:58539/callback`) and run:
+
+```bash
+python3 scripts/whoop_oauth_login.py --loopback
 ```
 
 3) Fetch + render today:
@@ -46,19 +54,25 @@ Optional:
 
 ## Workflow 1 — Connect WHOOP (OAuth login)
 
-1) Run:
+1) Run one of these modes:
+
+- **Phone/remote mode (recommended):**
 
 ```bash
 python3 scripts/whoop_oauth_login.py
 ```
 
-2) The script prints an authorization URL. Open it, log in, and approve.
+Then open the printed URL on any device, approve access, and paste the redirect URL (or code) back into the prompt.
 
-3) After redirect, either:
-- paste the full redirect URL into the prompt (recommended), or
-- paste the `code`.
+- **Desktop loopback mode (optional):**
 
-4) The script stores tokens at `WHOOP_TOKEN_PATH`.
+```bash
+python3 scripts/whoop_oauth_login.py --loopback
+```
+
+Use this only if your browser authorization happens on the same machine that runs OpenClaw, and `WHOOP_REDIRECT_URI` is a loopback URL like `http://127.0.0.1:<port>/callback`.
+
+2) The script stores tokens at `WHOOP_TOKEN_PATH`. 
 
 If you need to revoke later, use `delete /v2/user/access` (see `references/whoop_api.md`).
 

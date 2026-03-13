@@ -22,8 +22,18 @@ Optional:
 
 ## Connect (OAuth)
 
+Choose one mode:
+
+- **Phone/remote mode (recommended):**
+
 ```bash
 python3 scripts/strava_oauth_login.py
+```
+
+- **Desktop loopback mode (optional):** if you are authorizing in a browser on the same machine that runs OpenClaw and your `STRAVA_REDIRECT_URI` is a loopback URL (e.g. `http://127.0.0.1:58539/callback`):
+
+```bash
+python3 scripts/strava_oauth_login.py --loopback
 ```
 
 ## Fetch activities for a day

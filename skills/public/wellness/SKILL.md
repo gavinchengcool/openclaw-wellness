@@ -40,6 +40,9 @@ This skill is the **hub**. It should:
 - Unified normalized schema: `references/schema.md`
 - Digest templates: `references/digest-templates.md`
 - Tier 2 bridge (Apple Health / Health Connect): `references/bridge.md`
+- iOS exporter (Shortcuts): `references/exporter-ios-shortcuts.md`
+- Android exporter (automation): `references/exporter-android-automation.md`
+- Ingest protocol: `references/ingest-protocol.md`
 
 ## Guardrails
 

@@ -29,23 +29,63 @@ def parse_iso(dt: str) -> Optional[datetime]:
         return None
 
 
-def date_of(obj: Any) -> Optional[str]:
-    # Try common WHOOP timestamp keys.
-    for k in ("start", "start_time", "created_at", "updated_at", "end", "end_time"):
-        v = obj.get(k) if isinstance(obj, dict) else None
-        d = parse_iso(v)
-        if d:
-            return d.date().isoformat()
+def whoop_time_bounds(obj: Dict[str, Any]) -> Optional[tuple[Optional[datetime], Optional[datetime]]]:
+    """Return (start,end) datetimes when available.
+
+    Based on WHOOP v2 schemas:
+    - Sleep/Cycle/WorkoutV2 expose `start` and `end`.
+    - Recovery exposes `created_at`/`updated_at` (no start/end).
+    """
+    if not isinstance(obj, dict):
+        return None
+
+    start = parse_iso(obj.get("start"))
+    end = parse_iso(obj.get("end"))
+
+    if start or end:
+        return start, end
+
+    created = parse_iso(obj.get("created_at"))
+    updated = parse_iso(obj.get("updated_at"))
+    if created or updated:
+        return created, updated
+
     return None
 
 
-def pick_best_for_date(items: Any, requested_date: str) -> Optional[Dict[str, Any]]:
+def in_range(dt: Optional[datetime], start: Optional[datetime], end: Optional[datetime]) -> bool:
+    if dt is None or start is None or end is None:
+        return False
+    return start <= dt <= end
+
+
+def overlaps_range(
+    start_end: Optional[tuple[Optional[datetime], Optional[datetime]]],
+    range_start: Optional[datetime],
+    range_end: Optional[datetime],
+) -> bool:
+    if not start_end or range_start is None or range_end is None:
+        return False
+    s, e = start_end
+    if s and e:
+        return not (e < range_start or s > range_end)
+    if s:
+        return range_start <= s <= range_end
+    if e:
+        return range_start <= e <= range_end
+    return False
+
+
+def pick_best_for_range(items: Any, range_start: Optional[datetime], range_end: Optional[datetime]) -> Optional[Dict[str, Any]]:
     if not isinstance(items, list) or not items:
         return None
-    # Prefer exact match, else first.
+
+    # Prefer overlap with the requested UTC day-range.
     for it in items:
-        if isinstance(it, dict) and date_of(it) == requested_date:
+        if isinstance(it, dict) and overlaps_range(whoop_time_bounds(it), range_start, range_end):
             return it
+
+    # Fallback: first dict item.
     for it in items:
         if isinstance(it, dict):
             return it
@@ -93,27 +133,43 @@ def main() -> None:
     if wko_items is None:
         wko_items = get_collection(endpoints.get("workout", {}).get("data"))
 
-    best_rec = pick_best_for_date(rec_items, requested_date) if requested_date else None
-    best_slp = pick_best_for_date(slp_items, requested_date) if requested_date else None
-    best_cyc = pick_best_for_date(cyc_items, requested_date) if requested_date else None
+    # Parse the requested UTC range (produced by whoop_fetch.py)
+    rng = raw.get("range_utc") or {}
+    range_start = parse_iso(rng.get("start")) if isinstance(rng, dict) else None
+    range_end = parse_iso(rng.get("end")) if isinstance(rng, dict) else None
 
-    # Workout: summarize for the date if possible.
+    best_rec = pick_best_for_range(rec_items, range_start, range_end)
+    best_slp = pick_best_for_range(slp_items, range_start, range_end)
+    best_cyc = pick_best_for_range(cyc_items, range_start, range_end)
+
+    # Workout: summarize for the requested range.
     wkos = [w for w in wko_items if isinstance(w, dict)] if isinstance(wko_items, list) else []
-    wkos_for_day = [w for w in wkos if (requested_date and date_of(w) == requested_date)]
+    wkos_for_range = [w for w in wkos if overlaps_range(whoop_time_bounds(w), range_start, range_end)]
+
+    def workout_strain(workout: Dict[str, Any]) -> Optional[float]:
+        # WorkoutV2.score is an object; strain is typically nested.
+        sc = workout.get("score")
+        if isinstance(sc, dict):
+            for k in ("strain", "activity_strain"):
+                if k in sc:
+                    try:
+                        return float(sc.get(k))
+                    except Exception:
+                        return None
+        for k in ("strain", "activity_strain"):
+            if k in workout:
+                try:
+                    return float(workout.get(k))
+                except Exception:
+                    return None
+        return None
+
     top_strain = None
-    for w in (wkos_for_day or wkos):
-        s = None
-        # Try a few likely keys
-        for k in ("strain", "score", "activity_strain"):
-            if k in w:
-                s = w.get(k)
-                break
-        try:
-            if s is not None:
-                s = float(s)
-                top_strain = s if top_strain is None else max(top_strain, s)
-        except Exception:
-            pass
+    for w in (wkos_for_range or wkos):
+        s = workout_strain(w)
+        if s is None:
+            continue
+        top_strain = s if top_strain is None else max(top_strain, s)
 
     out: Dict[str, Any] = {
         "date": requested_date,
@@ -137,7 +193,7 @@ def main() -> None:
             "avg_hr_bpm": (best_cyc or {}).get("average_heart_rate") or (best_cyc or {}).get("avg_heart_rate"),
         },
         "workout": {
-            "count": len(wkos_for_day) if requested_date else len(wkos),
+            "count": len(wkos_for_range) if (range_start and range_end) else len(wkos),
             "top_strain": top_strain,
         },
         "source": {

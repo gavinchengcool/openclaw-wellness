@@ -45,6 +45,8 @@ Fetch raw WHOOP API objects:
 ```bash
 python3 scripts/whoop_fetch.py --date today --out /tmp/whoop_raw_today.json
 python3 scripts/whoop_fetch.py --date yesterday --out /tmp/whoop_raw_yday.json
+
+Tip: `whoop_fetch.py` uses WHOOP’s `start`/`end` query params + `nextToken` pagination. Use `--tz` to control which local day is fetched (default from `WHOOP_TZ`).
 ```
 
 Normalize into a stable schema:
@@ -57,6 +59,11 @@ Render a message for humans:
 
 ```bash
 python3 scripts/whoop_render.py /tmp/whoop_today.json --format markdown --channel generic
+
+Channel formatting presets:
+- `--channel discord` (uses **bold**)
+- `--channel slack` / `--channel whatsapp` (uses *bold*, avoids fancy markup)
+- `--channel telegram` (plain text)
 ```
 
 Then either:

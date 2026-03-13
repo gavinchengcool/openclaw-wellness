@@ -70,17 +70,28 @@ def main() -> None:
 
     raw = json.load(open(args.raw, "r", encoding="utf-8"))
     requested_date = raw.get("requested_date")
-    tz = args.tz or "Asia/Shanghai"
+    tz = args.tz or raw.get("requested_tz") or "Asia/Shanghai"
 
     endpoints = raw.get("endpoints", {})
 
     prof = endpoints.get("profile_basic", {}).get("data") or {}
     meas = endpoints.get("body_measurement", {}).get("data") or {}
 
-    rec_items = get_collection(endpoints.get("recovery", {}).get("data"))
-    slp_items = get_collection(endpoints.get("sleep", {}).get("data"))
-    cyc_items = get_collection(endpoints.get("cycle", {}).get("data"))
-    wko_items = get_collection(endpoints.get("workout", {}).get("data"))
+    # whoop_fetch stores collections as {records:[...]} in endpoints.<key>.records
+    rec_items = endpoints.get("recovery", {}).get("records")
+    slp_items = endpoints.get("sleep", {}).get("records")
+    cyc_items = endpoints.get("cycle", {}).get("records")
+    wko_items = endpoints.get("workout", {}).get("records")
+
+    # Backward compatibility if a raw bundle came from an older script version:
+    if rec_items is None:
+        rec_items = get_collection(endpoints.get("recovery", {}).get("data"))
+    if slp_items is None:
+        slp_items = get_collection(endpoints.get("sleep", {}).get("data"))
+    if cyc_items is None:
+        cyc_items = get_collection(endpoints.get("cycle", {}).get("data"))
+    if wko_items is None:
+        wko_items = get_collection(endpoints.get("workout", {}).get("data"))
 
     best_rec = pick_best_for_date(rec_items, requested_date) if requested_date else None
     best_slp = pick_best_for_date(slp_items, requested_date) if requested_date else None

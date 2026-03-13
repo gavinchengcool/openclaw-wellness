@@ -18,7 +18,23 @@ def fmt_line(key: str, val: Any) -> str:
     return f"{key}: {val}" if val is not None else f"{key}: —"
 
 
-def render_generic(doc: Dict[str, Any], markdown: bool) -> str:
+def style_for_channel(channel: str) -> Dict[str, str]:
+    c = (channel or "generic").lower()
+    # Keep it simple and robust across clients.
+    # - discord: **bold**
+    # - slack: *bold*
+    # - whatsapp: *bold* (avoid headings/tables)
+    # - telegram: prefer plain text (MarkdownV2 escaping is annoying)
+    if c in ("slack", "whatsapp"):
+        return {"bold_l": "*", "bold_r": "*", "bullet": "-", "use_markdown": "1"}
+    if c in ("discord",):
+        return {"bold_l": "**", "bold_r": "**", "bullet": "-", "use_markdown": "1"}
+    if c in ("telegram",):
+        return {"bold_l": "", "bold_r": "", "bullet": "-", "use_markdown": "0"}
+    return {"bold_l": "**", "bold_r": "**", "bullet": "-", "use_markdown": "1"}
+
+
+def render_generic(doc: Dict[str, Any], markdown: bool, channel: str) -> str:
     date = doc.get("date") or "(unknown date)"
 
     r = doc.get("recovery", {})
@@ -26,19 +42,31 @@ def render_generic(doc: Dict[str, Any], markdown: bool) -> str:
     c = doc.get("cycle", {})
     w = doc.get("workout", {})
 
+    st = style_for_channel(channel)
+    use_md = markdown and st.get("use_markdown") == "1"
+    bl, br = st.get("bold_l", ""), st.get("bold_r", "")
+    bullet = st.get("bullet", "-")
+
     title = f"WHOOP summary — {date}"
-    if markdown:
-        out = [f"**{title}**"]
-        out.append("")
-        out.append(f"- Recovery: **{r.get('score') if r.get('score') is not None else '—'}**")
-        out.append(f"- HRV (ms): {r.get('hrv_ms') if r.get('hrv_ms') is not None else '—'}")
-        out.append(f"- RHR (bpm): {r.get('rhr_bpm') if r.get('rhr_bpm') is not None else '—'}")
-        out.append(f"- Sleep duration (min): {s.get('duration_minutes') if s.get('duration_minutes') is not None else '—'}")
-        out.append(f"- Sleep performance (%): {s.get('performance_percent') if s.get('performance_percent') is not None else '—'}")
-        out.append(f"- Day strain: **{c.get('strain') if c.get('strain') is not None else '—'}**")
-        out.append(f"- Workouts: {w.get('count') if w.get('count') is not None else '—'} (top strain: {w.get('top_strain') if w.get('top_strain') is not None else '—'})")
+
+    def b(x: str) -> str:
+        return f"{bl}{x}{br}" if use_md and bl and br else x
+
+    if use_md:
+        out = [b(title), ""]
+        out.append(f"{bullet} Recovery: {b(str(r.get('score'))) if r.get('score') is not None else '—'}")
+        out.append(f"{bullet} HRV (ms): {r.get('hrv_ms') if r.get('hrv_ms') is not None else '—'}")
+        out.append(f"{bullet} RHR (bpm): {r.get('rhr_bpm') if r.get('rhr_bpm') is not None else '—'}")
+        out.append(f"{bullet} Sleep duration (min): {s.get('duration_minutes') if s.get('duration_minutes') is not None else '—'}")
+        out.append(f"{bullet} Sleep performance (%): {s.get('performance_percent') if s.get('performance_percent') is not None else '—'}")
+        out.append(f"{bullet} Day strain: {b(str(c.get('strain'))) if c.get('strain') is not None else '—'}")
+        out.append(
+            f"{bullet} Workouts: {w.get('count') if w.get('count') is not None else '—'} "
+            f"(top strain: {w.get('top_strain') if w.get('top_strain') is not None else '—'})"
+        )
         return "\n".join(out).strip() + "\n"
 
+    # Plain text fallback
     out = [title]
     out.append(fmt_line("Recovery", r.get("score")))
     out.append(fmt_line("HRV (ms)", r.get("hrv_ms")))
@@ -62,7 +90,7 @@ def main() -> None:
 
     # For now, keep channel differences minimal; avoid tables and fancy markup.
     # WhatsApp can be markdown-ish but safest is simple bullets.
-    msg = render_generic(doc, markdown=markdown)
+    msg = render_generic(doc, markdown=markdown, channel=args.channel)
     print(msg, end="")
 
 

@@ -40,6 +40,7 @@ ngrok prints a public `https://...ngrok-free.app` URL. That is your **Sync URL**
 
 - Sync URL: `https://<tunnel-host>`
 - Upload endpoint: `POST https://<tunnel-host>/ingest`
+- Helper endpoint (no token): `GET https://<tunnel-host>/config`
 - Header: `Authorization: Bearer <token>`
 
 Get the token from:

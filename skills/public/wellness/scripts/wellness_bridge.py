@@ -164,6 +164,36 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(doc).encode("utf-8"))
             return
 
+        if self.path.startswith("/config"):
+            # Non-sensitive config helper for phone exporter setup.
+            # Do NOT include token here.
+            cfg = {
+                "ok": True,
+                "endpoints": {
+                    "ingest": "/ingest",
+                    "health": "/health",
+                    "status": "/status",
+                    "config": "/config",
+                },
+                "required_headers": {
+                    "Authorization": "Bearer <token>",
+                    "Content-Type": "application/json",
+                },
+                "minimal_payload": {
+                    "date": "YYYY-MM-DD",
+                    "source": "apple_health|health_connect",
+                    "timezone": "IANA/Zone",
+                    "generated_at": "ISO-8601",
+                    "activity": {"steps": 1234},
+                },
+                "schema_ref": "references/ingest-protocol.md",
+            }
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(cfg).encode("utf-8"))
+            return
+
         self.send_response(404)
         self.end_headers()
 

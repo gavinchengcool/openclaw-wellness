@@ -1,22 +1,24 @@
-# WHOOP (Official API) — OpenClaw Skill
+# OpenClaw Wellness Hub
 
-This repo contains an OpenClaw skill that connects to the **official WHOOP Developer Platform** via OAuth, stores + refreshes tokens locally, and fetches WHOOP v2 metrics (recovery, sleep, strain/cycle, workouts, profile, body measurements).
+This repo contains a **Wellness Hub** skill for OpenClaw plus a growing set of official source skills (WHOOP, Strava, etc.). The goal is one place to connect your health/wellness apps and devices, then generate unified summaries and push them to any chat channel.
 
-- ClawHub page: https://clawhub.ai/gavinchengcool/openclaw-whoop
-- Install:
-  ```bash
-  clawhub install openclaw-whoop
-  # or pin a version
-  clawhub install openclaw-whoop --version 0.1.1
-  ```
+## ClawHub
 
-## What it does
+- Wellness Hub: https://clawhub.ai/gavinchengcool/wellness
+- WHOOP (Official): https://clawhub.ai/gavinchengcool/openclaw-whoop
+- Strava (Official): https://clawhub.ai/gavinchengcool/openclaw-strava
 
-- Official OAuth (authorization code flow)
-- Local token storage + automatic refresh
-- Fetch daily WHOOP metrics with `start`/`end` filters + `nextToken` pagination
-- Normalize raw API payloads into a stable JSON schema
-- Render a simple message suitable for multiple chat channels (discord/slack/whatsapp/telegram/generic)
+Install:
+```bash
+clawhub install wellness
+clawhub install openclaw-whoop
+clawhub install openclaw-strava
+```
+
+## What you get
+
+- A hub skill (`wellness`) with a Tier 1 + Tier 2 source catalog, a normalized schema, and digest templates
+- Source skills that handle OAuth, token refresh, fetch, normalization, and rendering per vendor
 
 ## Quick start (local)
 

@@ -1,11 +1,35 @@
 ---
 name: whoop
-description: Connect to the WHOOP Developer Platform via official OAuth (authorization code flow), store and refresh tokens, and fetch WHOOP v2 data (recovery, sleep, cycle/strain, workout, profile, body measurements). Use when a user asks to connect/authorize WHOOP, pull WHOOP metrics, summarize today/yesterday, generate daily/weekly WHOOP reports, or send WHOOP updates to any OpenClaw chat channel (TUI/webchat/Slack/Discord/WhatsApp/Telegram/etc.).
+description: Official WHOOP Developer Platform integration for OpenClaw: OAuth connect/authorize, local token storage + refresh, and WHOOP v2 metric fetch (recovery, sleep, strain/cycle, workouts, profile, body measurements). Use when users say: connect WHOOP, authorize WHOOP, pull WHOOP data, get today/yesterday recovery/sleep/strain, generate daily/weekly WHOOP summaries, or push WHOOP updates to any chat channel (TUI/webchat/Slack/Discord/WhatsApp/Telegram/etc.).
 ---
 
-# WHOOP (official API)
+# WHOOP (Official API)
 
-Keep this skill **WHOOP-only** (data source). Do not hardcode any destination channel. Generate a clean text/markdown message and either reply in the current chat or use OpenClaw’s `message` tool to send it to a chosen target.
+Use this skill to **connect WHOOP → fetch metrics → produce a message**.
+
+Scope: WHOOP is the data source only. Keep delivery channel-agnostic: generate text/markdown and either reply in the current chat or send via OpenClaw’s `message` tool.
+
+## Quick start (minimal)
+
+1) Set env vars:
+
+- `WHOOP_CLIENT_ID`
+- `WHOOP_CLIENT_SECRET`
+- `WHOOP_REDIRECT_URI`
+
+2) Connect once:
+
+```bash
+python3 scripts/whoop_oauth_login.py
+```
+
+3) Fetch + render today:
+
+```bash
+python3 scripts/whoop_fetch.py --date today --out /tmp/whoop_raw_today.json
+python3 scripts/whoop_normalize.py /tmp/whoop_raw_today.json --out /tmp/whoop_today.json
+python3 scripts/whoop_render.py /tmp/whoop_today.json --format markdown --channel generic
+```
 
 ## Configuration (required)
 
